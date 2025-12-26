@@ -1,0 +1,6 @@
+pytest-playwright
+pytest
+playwright
+faker
+allure-pytest
+pytest-dotenv

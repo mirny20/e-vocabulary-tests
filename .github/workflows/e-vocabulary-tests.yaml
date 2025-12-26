@@ -1,0 +1,72 @@
+name: Playwright tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: "Choose env"
+        required: true
+        options:
+          - dev
+          - prod
+      suite:
+        type: choice
+        description: "Test suite"
+        required: true
+        options:
+          - all
+          - smoke
+          - regression
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        playwright install --with-deps
+
+    - name: Set environment URL
+      run: |
+        if [ "${{ inputs.environment }}" = "dev" ]; then
+          echo "BASE_URL=https://e-vocabulary.vercel.app" >> $GITHUB_ENV
+        elif [ "${{ inputs.environment }}" = "prod" ]; then
+          echo "BASE_URL=https://e-vocabulary.vercel.app" >> $GITHUB_ENV
+        fi
+
+    - name: Run tests
+      env:
+        BASE_URL: ${{ env.BASE_URL }}
+        PASSWORD_USER_1: ${{ secrets.PASSWORD_MAIN_USER }}
+      run: |
+        echo "Running on environment: $BASE_URL"
+        echo "Suite: ${{ inputs.suite }}"
+        
+        if [ "${{ inputs.suite }}" = "all" ]; then
+          pytest
+        elif [ "${{ inputs.suite }}" = "smoke" ]; then
+          pytest -m smoke
+        elif [ "${{ inputs.suite }}" = "regression" ]; then
+          pytest -m regression 
+        fi
+
+    - name: Upload report
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results
+        path: allure-results
+        retention-days: 14
