@@ -51,7 +51,7 @@ jobs:
       env:
         BASE_URL: ${{ env.BASE_URL }}
         USERNAME_MAIN_USER: ${{ secrets.USERNAME_MAIN_USER }}
-        PASSWORD_USER_1: ${{ secrets.PASSWORD_MAIN_USER }}
+        PASSWORD_MAIN_USER: ${{ secrets.PASSWORD_MAIN_USER }}
         EMAIL_MAIN_USER: ${{ secrets.EMAIL_MAIN_USER }}
       run: |
         echo "Running on environment: $BASE_URL"
