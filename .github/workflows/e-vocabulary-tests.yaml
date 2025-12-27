@@ -21,9 +21,11 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,10 +36,16 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
         playwright install --with-deps
+        npm install -g allure-commandline
 
     - name: Set environment URL
       run: |
@@ -65,10 +73,32 @@ jobs:
           pytest -m regression 
         fi
 
-    - name: Upload report
-      if: ${{ always() }}
-      uses: actions/upload-artifact@v4
+    - name: Generate Allure report
+      if: always()
+      run: |
+        allure generate allure-results --clean -o allure-report
+
+    - name: Upload Allure report to Pages artifact
+      if: always()
+      uses: actions/upload-pages-artifact@v3
       with:
-        name: allure-results
-        path: allure-results
-        retention-days: 14
+        path: allure-report
+
+  deploy:
+    if: always()
+    needs: tests
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add report link to summary
+        run: |
+          echo " Allure Test Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo " ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
