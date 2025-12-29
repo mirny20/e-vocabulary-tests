@@ -11,19 +11,34 @@ def test_authentication(anon_page: Page):
     auth_page = AuthPage(anon_page)
     home_page = HomePage(anon_page)
     auth_page.open()
+
     auth_page.perform_login(USERNAME_MAIN_USER, PASSWORD_MAIN_USER)
     home_page.wait_for_full_load()
     home_page.verify_logged_user_email(EMAIL_MAIN_USER)
 
 
-@pytest.mark.development
+@pytest.mark.regression
 def test_login_button_states(anon_page: Page):
     auth_page = AuthPage(anon_page)
     auth_page.open()
+
     auth_page.expect_login_button_disabled()
+
     auth_page.fill_in_username("test")
     auth_page.expect_login_button_disabled()
+
     auth_page.fill_in_password("test")
     auth_page.expect_login_button_enabled()
+
     auth_page.clear_username_field()
     auth_page.expect_login_button_disabled()
+
+
+@pytest.mark.regression
+@pytest.mark.xfail(reason="Backend returns raw error message (known issue)")
+def test_invalid_credentials(anon_page: Page):
+    auth_page = AuthPage(anon_page)
+    auth_page.open()
+
+    auth_page.perform_login("invalidLogin", "invalidPass")
+    auth_page.expect_invalid_credentials_error(timeout=2000)

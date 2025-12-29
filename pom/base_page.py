@@ -83,3 +83,7 @@ class BasePage:
         self.user_avatar_button.click()
         expect(self.dropdown_user_menu).to_contain_text(email)
         self.user_avatar_button.click()
+
+    @allure.step("Expect alert toast message text to have text {text}")
+    def expect_alert_toast_to_have_text(self, text, timeout=5000):
+        expect(self.alert_toast_message).to_have_text(text, timeout=timeout)
