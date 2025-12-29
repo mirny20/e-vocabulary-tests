@@ -7,6 +7,7 @@ from pom.theme import Theme
 
 class AuthPage(BasePage):
     URL = "/?#/auth"
+    INVALID_CREDENTIALS_ERROR_TEXT = "User not found"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -64,3 +65,8 @@ class AuthPage(BasePage):
         }
         expect(self.login_button).to_have_css("background-color", colors[current_theme])
         expect(self.login_button).to_be_enabled()
+
+    @allure.step("Expect invalid credentials alert toast message")
+    def expect_invalid_credentials_error(self, timeout=5000):
+        expect(self.alert_toast_message).to_be_visible()
+        self.expect_alert_toast_to_have_text(self.INVALID_CREDENTIALS_ERROR_TEXT, timeout)
