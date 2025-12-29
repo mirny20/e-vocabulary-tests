@@ -70,9 +70,11 @@ class BasePage:
 
     def get_current_app_theme(self) -> Theme:
         app = self.page.locator("#app")
+
         if app.evaluate("el => el.classList.contains('theme--dark')"):
             self.logger.debug("The application theme is dark")
             return Theme.DARK
+
         self.logger.debug("The application theme is light")
         return Theme.LIGHT
 

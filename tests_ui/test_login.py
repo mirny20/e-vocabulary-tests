@@ -1,5 +1,5 @@
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 from conftest import USERNAME_MAIN_USER, PASSWORD_MAIN_USER, EMAIL_MAIN_USER
 from pom.auth_page import AuthPage
