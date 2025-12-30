@@ -18,6 +18,13 @@ on:
           - all
           - smoke
           - regression
+      parallel_execution:
+        type: choice
+        description: "Parallel execution"
+        required: true
+        options:
+          - off (1 worker)
+          - auto
 
 permissions:
   contents: read
@@ -64,14 +71,23 @@ jobs:
       run: |
         echo "Running on environment: $BASE_URL"
         echo "Suite: ${{ inputs.suite }}"
+        echo "Parallel execution: ${{ inputs.parallel_execution }}"
         
-        if [ "${{ inputs.suite }}" = "all" ]; then
-          pytest
-        elif [ "${{ inputs.suite }}" = "smoke" ]; then
-          pytest -m smoke
+        PYTEST_ARGS=""
+        
+        if [ "${{ inputs.suite }}" = "smoke" ]; then
+          PYTEST_ARGS="$PYTEST_ARGS -m smoke"
         elif [ "${{ inputs.suite }}" = "regression" ]; then
-          pytest -m regression 
+          PYTEST_ARGS="$PYTEST_ARGS -m regression"
         fi
+        
+        if [ "${{ inputs.parallel_execution }}" = "auto" ]; then
+          PYTEST_ARGS="$PYTEST_ARGS -n auto"
+        fi
+        
+        echo "Running pytest $PYTEST_ARGS"
+        pytest $PYTEST_ARGS
+        
 
     - name: Generate Allure report
       if: always()

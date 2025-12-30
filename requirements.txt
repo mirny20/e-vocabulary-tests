@@ -4,3 +4,4 @@ playwright
 faker
 allure-pytest
 pytest-dotenv
+pytest-xdist
