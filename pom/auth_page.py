@@ -8,6 +8,7 @@ from pom.theme import Theme
 class AuthPage(BasePage):
     URL = "/?#/auth"
     INVALID_CREDENTIALS_ERROR_TEXT = "User not found"
+    INVALID_USERNAME_CHARS_ERROR_TEXT = "Use eng words or numbers"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -15,6 +16,8 @@ class AuthPage(BasePage):
         self.password_field = self.page.get_by_role("textbox", name="Password")
         self.login_button = self.page.get_by_role("button", name="Login")
         self.switch_to_registration_button = self.get_by_role("button", name="switch to registration")
+        self.username_field_alert = (self.page.locator(".v-input__control").filter(has_text="Username")
+                                     .get_by_role("alert"))
 
     @allure.step("Open auth page")
     def open(self):
@@ -70,3 +73,12 @@ class AuthPage(BasePage):
     def expect_invalid_credentials_error(self, timeout=5000):
         expect(self.alert_toast_message).to_be_visible()
         self.expect_alert_toast_to_have_text(self.INVALID_CREDENTIALS_ERROR_TEXT, timeout)
+
+    @allure.step("Expect 'invalid characters' error message to be displayed")
+    def expect_invalid_characters_error(self):
+        expect(self.username_field_alert).to_be_visible()
+        expect(self.username_field_alert).to_have_text(self.INVALID_USERNAME_CHARS_ERROR_TEXT)
+
+    @allure.step("Expect 'invalid characters' error message to be hidden")
+    def expect_invalid_characters_error_not_visible(self):
+        expect(self.username_field_alert).not_to_be_visible()

@@ -87,7 +87,6 @@ jobs:
         
         echo "Running pytest $PYTEST_ARGS"
         pytest $PYTEST_ARGS
-        
 
     - name: Generate Allure report
       if: always()
