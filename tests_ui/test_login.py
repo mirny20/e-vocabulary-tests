@@ -42,3 +42,18 @@ def test_invalid_credentials(anon_page: Page):
 
     auth_page.perform_login("invalidLogin", "invalidPass")
     auth_page.expect_invalid_credentials_error(timeout=2000)
+
+
+@pytest.mark.regression
+def test_invalid_characters(anon_page: Page):
+    auth_page = AuthPage(anon_page)
+    auth_page.open()
+
+    auth_page.fill_in_username("$%#")
+    auth_page.expect_invalid_characters_error()
+
+    auth_page.fill_in_username("фрл")
+    auth_page.expect_invalid_characters_error()
+
+    auth_page.fill_in_username("abc")
+    auth_page.expect_invalid_characters_error_not_visible()
