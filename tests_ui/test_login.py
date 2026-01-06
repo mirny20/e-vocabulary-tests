@@ -1,3 +1,4 @@
+import allure
 import pytest
 from playwright.sync_api import Page
 
@@ -6,6 +7,7 @@ from pom.auth_page import AuthPage
 from pom.home_page import HomePage
 
 
+@allure.title("User is able to log in")
 @pytest.mark.smoke
 def test_authentication(anon_page: Page):
     auth_page = AuthPage(anon_page)
@@ -17,6 +19,7 @@ def test_authentication(anon_page: Page):
     home_page.verify_logged_user_email(EMAIL_MAIN_USER)
 
 
+@allure.title("Ensure 'Login' button 'enabled' and 'disabled' states")
 @pytest.mark.regression
 def test_login_button_states(anon_page: Page):
     auth_page = AuthPage(anon_page)
@@ -34,6 +37,7 @@ def test_login_button_states(anon_page: Page):
     auth_page.expect_login_button_disabled()
 
 
+@allure.title("Alert message is displayed when credentials are invalid")
 @pytest.mark.regression
 @pytest.mark.xfail(reason="Backend returns raw error message (known issue)")
 def test_invalid_credentials(anon_page: Page):
@@ -44,6 +48,7 @@ def test_invalid_credentials(anon_page: Page):
     auth_page.expect_invalid_credentials_error(timeout=2000)
 
 
+@allure.title("Username field accepts only latin characters and numbers")
 @pytest.mark.regression
 def test_invalid_characters(anon_page: Page):
     auth_page = AuthPage(anon_page)
