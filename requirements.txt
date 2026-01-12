@@ -5,3 +5,5 @@ faker
 allure-pytest
 pytest-dotenv
 pytest-xdist
+deep-translator
+randword
