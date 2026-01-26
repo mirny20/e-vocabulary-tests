@@ -90,3 +90,9 @@ def anon_page(browser: Browser, base_url):
     page.set_default_timeout(7000)
     yield page
     context.close()
+
+
+@pytest.fixture(scope="function")
+def generated_word() -> dict[str, str]:
+    word_provider = WordProvider()
+    return word_provider.get_word_with_translation()
