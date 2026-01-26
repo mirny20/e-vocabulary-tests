@@ -51,7 +51,7 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope="session")
 def auth_context(playwright: Playwright, base_url):
-    browser = playwright.chromium.launch(headless=False)
+    browser = playwright.chromium.launch()
     context = browser.new_context(base_url=base_url)
     page = context.new_page()
     page.set_default_timeout(7000)
