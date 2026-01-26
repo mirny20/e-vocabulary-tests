@@ -6,6 +6,7 @@ from playwright.sync_api import Browser, Playwright, Page
 
 from pom.auth_page import AuthPage
 from pom.home_page import HomePage
+from words.word_provider import WordProvider
 
 USERNAME_MAIN_USER = os.environ['USERNAME_MAIN_USER']
 PASSWORD_MAIN_USER = os.environ['PASSWORD_MAIN_USER']
@@ -25,7 +26,7 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     rep = outcome.get_result()
 
-    if rep.when != "call" or not rep.failed:
+    if rep.when != "call" or rep.outcome == "passed":
         return
 
     page = None
@@ -33,6 +34,10 @@ def pytest_runtest_makereport(item, call):
     for arg in item.funcargs.values():
         if isinstance(arg, Page):
             page = arg
+            break
+
+        if hasattr(arg, "page") and isinstance(arg.page, Page):
+            page = arg.page
             break
 
     if page:
