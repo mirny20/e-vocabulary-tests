@@ -104,7 +104,7 @@ class SetWordsTab(BasePage):
 
             return
 
-        raise RuntimeError("Failed to find valid translatable word")
+        raise RuntimeError("Failed to find translatable word or translations were not displayed")
 
     def fill_word_field_with_random_word(self):
         word_provider = WordProvider()
