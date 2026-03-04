@@ -1,3 +1,4 @@
 allure-results/
 venv/
 .env
+words/data/temp_word_gw*

@@ -1,8 +1,13 @@
 import json
+import os
 from pathlib import Path
 
 FILE_PATH = Path(__file__).parent / "data" / "words.json"
-TEMP_WORD_FILE_PATH = Path(__file__).parent / "data" / "temp_word.json"
+
+
+def get_temp_word_file_path() -> Path:
+    worker_id = os.getenv("PYTEST_XDIST_WORKER", "main")
+    return Path(__file__).parent / "data" / f"temp_word_{worker_id}.json"
 
 
 def load_words_from_file() -> list[dict]:
@@ -32,15 +37,19 @@ def add_word(word: dict):
 
 
 def load_word_from_temp_word_file() -> dict:
-    if not TEMP_WORD_FILE_PATH.exists():
+    file_path = get_temp_word_file_path()
+
+    if not file_path.exists():
         return {}
 
-    with open(TEMP_WORD_FILE_PATH, "r", encoding="utf-8") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 
 def save_temp_eng_word(word: str):
-    with open(TEMP_WORD_FILE_PATH, "w", encoding="utf-8") as file:
+    file_path = get_temp_word_file_path()
+
+    with open(file_path, "w", encoding="utf-8") as file:
         json.dump(
             {
                 "word_eng": word,
@@ -53,13 +62,17 @@ def save_temp_eng_word(word: str):
 
 
 def save_temp_translation(translation: str):
+    file_path = get_temp_word_file_path()
+
     data = load_word_from_temp_word_file()
     data["translation"] = translation
 
-    with open(TEMP_WORD_FILE_PATH, "w", encoding="utf-8") as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
 
 def clear_temp_word_file():
-    with open(TEMP_WORD_FILE_PATH, "w", encoding="utf-8") as file:
+    file_path = get_temp_word_file_path()
+
+    with open(file_path, "w", encoding="utf-8") as file:
         json.dump({}, file, ensure_ascii=False, indent=2)

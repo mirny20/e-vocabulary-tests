@@ -3,6 +3,7 @@ from playwright.sync_api import Page, Error, expect
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from pom.base_page import BasePage
+from pom.home_page import HomePage
 from words import word_storage
 from words.word_provider import WordProvider
 
@@ -20,6 +21,12 @@ class SetWordsTab(BasePage):
         self.dropdown_option_translation = self.dropdown_list_option.locator(".v-chip__content").first
         self.set_word_button = self.page.get_by_role("button", name="set word")
         self.word_field_alert = self.page.locator(".v-input__control").filter(has_text="Word").get_by_role("alert")
+
+    @allure.step("Open 'Set Words' tab")
+    def open_set_words_tab(self):
+        home_page = HomePage(self.page)
+        home_page.open()
+        home_page.switch_to_set_words_tab()
 
     @allure.step(f"Fill 'Word (en)' field with word")
     def fill_eng_word_field(self, word: str):
