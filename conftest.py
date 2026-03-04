@@ -1,16 +1,21 @@
+import logging
 import os
 
 import allure
 import pytest
 from playwright.sync_api import Browser, Playwright, Page
+from pytest_playwright.pytest_playwright import browser
 
 from pom.auth_page import AuthPage
 from pom.home_page import HomePage
+from pom.set_words_tab import SetWordsTab
+from pom.words_tab import WordsTab
 from words import word_storage
 
 USERNAME_MAIN_USER = os.environ['USERNAME_MAIN_USER']
 PASSWORD_MAIN_USER = os.environ['PASSWORD_MAIN_USER']
 EMAIL_MAIN_USER = os.environ['EMAIL_MAIN_USER']
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
@@ -104,3 +109,47 @@ def temp_word_lifecycle(request):
             word_storage.add_word(temp_word)
 
     word_storage.clear_temp_word_file()
+
+
+@pytest.fixture
+def word_with_translation(playwright, base_url):
+    browser = playwright.chromium.launch()
+    worker_id = os.getenv("PYTEST_XDIST_WORKER", "main")
+    auth_state = f"state_{worker_id}.json"
+
+    context = browser.new_context(storage_state=auth_state, base_url=base_url)
+    page = context.new_page()
+
+    set_words_tab = SetWordsTab(page)
+    words_tab = WordsTab(page)
+
+    words_tab.open_words_tab()
+
+    words_from_storage = word_storage.load_words_from_file()
+    user_words = words_tab.get_words_from_all_cards_on_page()
+
+    word_with_translation = {}
+
+    for word in words_from_storage:
+        if word["word_eng"] in user_words:
+            logger.info(f"Word '{word}' founded in word storage")
+            word_with_translation = word
+            break
+
+    if not word_with_translation:
+        logger.info(f"No suitable word was found in the word storage. Adding new word with 'set word' functionality'")
+        set_words_tab.open_set_words_tab()
+        set_words_tab.fill_word_field_with_translatable_random_word()
+        set_words_tab.choose_first_translation_from_dropdown_list()
+        set_words_tab.choose_default_theme()
+        set_words_tab.click_set_word_button()
+
+        word_with_translation = word_storage.load_word_from_temp_word_file()
+        logger.info(f"Word {word_with_translation} was added to dictionary")
+
+    if word_with_translation:
+        logger.info(f"Yielding {word_with_translation}")
+        yield word_with_translation
+
+    context.close()
+    browser.close()
