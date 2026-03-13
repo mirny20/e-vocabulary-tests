@@ -10,7 +10,7 @@ class WordProvider:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def get_random_english_word(self, max_attempts=15):
+    def get_random_english_word(self, max_attempts=15) -> str:
         pattern = re.compile(r"^[a-z]+$")
 
         for _ in range(max_attempts):
@@ -21,7 +21,7 @@ class WordProvider:
 
         raise RuntimeError("Failed to generate word")
 
-    def get_translation_from_english(self, word):
+    def get_translation_from_english(self, word) -> str:
         translators = [LingueeTranslator, GoogleTranslator]
         pattern = re.compile(r"^[а-яА-Я]+$")
         last_exception = None
