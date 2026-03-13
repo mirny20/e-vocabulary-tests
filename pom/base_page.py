@@ -29,6 +29,16 @@ class BasePage:
             raise ValueError("URL is not defined for this page")
         self.page.goto(self.URL)
 
+    @allure.step("Verify that logged in user email is correct")
+    def verify_logged_user_email(self, email):
+        self.user_avatar_button.click()
+        expect(self.dropdown_user_menu).to_contain_text(email)
+        self.user_avatar_button.click()
+
+    @allure.step("Expect alert toast message to have text {text}")
+    def expect_alert_toast_to_have_text(self, text, timeout=5000):
+        expect(self.alert_toast_message).to_have_text(text, timeout=timeout)
+
     def wait_until_element_disappears(self, selector: str, timeout: int = 10000,):
         self.page.wait_for_function(
             """
@@ -77,13 +87,3 @@ class BasePage:
 
         self.logger.debug("The application theme is light")
         return Theme.LIGHT
-
-    @allure.step("Verify that logged in user email is correct")
-    def verify_logged_user_email(self, email):
-        self.user_avatar_button.click()
-        expect(self.dropdown_user_menu).to_contain_text(email)
-        self.user_avatar_button.click()
-
-    @allure.step("Expect alert toast message to have text {text}")
-    def expect_alert_toast_to_have_text(self, text, timeout=5000):
-        expect(self.alert_toast_message).to_have_text(text, timeout=timeout)

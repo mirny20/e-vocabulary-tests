@@ -32,30 +32,9 @@ class SetWordsTab(BasePage):
     def fill_eng_word_field(self, word: str):
         self.eng_word_field.fill(word)
 
-    def dropdown_list_has_available_translations(self) -> bool:
-        try:
-            self.dropdown_list.wait_for(timeout=15000, state="visible")
-            return self.dropdown_list_option.count() > 0
-        except PlaywrightTimeoutError:
-            return False
-
-    def get_all_translations_from_dropdown_list(self) -> list[str]:
-        all_translations = []
-
-        try:
-            self.dropdown_list.wait_for(timeout=15000, state="visible")
-        except PlaywrightTimeoutError:
-            self.logger.warning("Dropdown list with translations wasn't displayed.")
-            return all_translations
-
-        for translation in self.dropdown_option_translation.all():
-            all_translations.append(translation.text_content().strip())
-
-        return all_translations
-
     @allure.step(f"Choose translation from 'Translate' field dropdown")
     def choose_translation_from_dropdown_list(self, translation):
-        all_translations = self.get_all_translations_from_dropdown_list()
+        all_translations = self._get_all_translations_from_dropdown_list()
 
         if translation in all_translations:
             self.dropdown_list_option.get_by_text(translation, exact=True).click()
@@ -65,22 +44,14 @@ class SetWordsTab(BasePage):
                 f"Available: {all_translations}"
             )
 
-    def fill_in_theme_field(self, theme_name: str):
-        self.theme_field.click()
-        self.theme_field.fill(theme_name)
-
-    def choose_theme_from_dropdown_list(self, theme_name: str):
-        self.theme_field.click()
-        self.dropdown_list_option.get_by_text(theme_name, exact=True).click()
-
     @allure.step("Choose default theme for word (select from dropdown or create it if necessary)")
     def choose_default_theme(self):
         try:
-            self.choose_theme_from_dropdown_list("default_theme")
+            self._choose_theme_from_dropdown_list("default_theme")
 
         except PlaywrightTimeoutError:
             self.logger.warning("Default theme not found, creating it")
-            self.fill_in_theme_field("default_theme")
+            self._fill_in_theme_field("default_theme")
 
         except Error as e:
             self.logger.error(f"Unexpected error during choosing default theme: {e}")
@@ -99,13 +70,13 @@ class SetWordsTab(BasePage):
     @allure.step("Fill the 'word' field with valid translatable random word")
     def fill_word_field_with_translatable_random_word(self, max_attempts=5):
         for _ in range(max_attempts):
-            self.fill_word_field_with_random_word()
+            self._fill_word_field_with_random_word()
 
-            if self.word_already_exist_error_is_displayed():
+            if self._word_already_exist_error_is_displayed():
                 self.logger.debug("Generated word already exists, trying another one")
                 continue
 
-            if not self.dropdown_list_has_available_translations():
+            if not self._dropdown_list_has_available_translations():
                 self.logger.debug("No translation for word, trying another one")
                 continue
 
@@ -113,17 +84,46 @@ class SetWordsTab(BasePage):
 
         raise RuntimeError("Failed to find translatable word or translations were not displayed")
 
-    def fill_word_field_with_random_word(self):
+    @allure.step("Choose first translation that appeared in the 'Translation' field")
+    def choose_first_translation_from_dropdown_list(self):
+        translation = self._get_all_translations_from_dropdown_list()[0]
+        self.choose_translation_from_dropdown_list(translation)
+        word_storage.save_temp_translation(translation)
+
+    def _dropdown_list_has_available_translations(self) -> bool:
+        try:
+            self.dropdown_list.wait_for(timeout=15000, state="visible")
+            return self.dropdown_list_option.count() > 0
+        except PlaywrightTimeoutError:
+            return False
+
+    def _get_all_translations_from_dropdown_list(self) -> list[str]:
+        all_translations = []
+
+        try:
+            self.dropdown_list.wait_for(timeout=15000, state="visible")
+        except PlaywrightTimeoutError:
+            self.logger.warning("Dropdown list with translations wasn't displayed.")
+            return all_translations
+
+        for translation in self.dropdown_option_translation.all():
+            all_translations.append(translation.text_content().strip())
+
+        return all_translations
+
+    def _fill_in_theme_field(self, theme_name: str):
+        self.theme_field.click()
+        self.theme_field.fill(theme_name)
+
+    def _choose_theme_from_dropdown_list(self, theme_name: str):
+        self.theme_field.click()
+        self.dropdown_list_option.get_by_text(theme_name, exact=True).click()
+
+    def _fill_word_field_with_random_word(self):
         word_provider = WordProvider()
         random_word = word_provider.get_random_english_word()
         self.fill_eng_word_field(random_word)
         word_storage.save_temp_eng_word(random_word)
 
-    @allure.step("Choose first translation that appeared in the 'Translation' field")
-    def choose_first_translation_from_dropdown_list(self):
-        translation = self.get_all_translations_from_dropdown_list()[0]
-        self.choose_translation_from_dropdown_list(translation)
-        word_storage.save_temp_translation(translation)
-
-    def word_already_exist_error_is_displayed(self) -> bool:
+    def _word_already_exist_error_is_displayed(self) -> bool:
         return self.word_field_alert.get_by_text(self.WORD_ALREADY_EXIST_ERROR_TEXT).is_visible()
