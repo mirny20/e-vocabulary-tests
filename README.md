@@ -9,6 +9,7 @@ Before you begin, ensure you have Python 3.11+ installed.
 
 You also need an active account in the E-Vocabulary application.
 *   You can register a new account here: [https://e-vocabulary.vercel.app/](https://e-vocabulary.vercel.app/)
+
 ⚠️ After registering your account, you must update the "My known language:" setting to "ua", because the test project is configured to work with the "ua-en" language pair.
 
 You can change this setting on the "My account" page: https://e-vocabulary.vercel.app/#/user
